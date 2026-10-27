@@ -41,6 +41,16 @@ def std_siblings(path) -> Dict[str, str]:
     return sib
 
 
+def std_plane(sib: Dict[str, str]) -> str:
+    """'flam' if every channel has FLAM, else 'skysub'. A standard is usually not yet
+    flux-calibrated (the sensfunc is built from it), and plane='auto' refuses that."""
+    for p in sib.values():
+        with fits.open(p) as h:
+            if 'FLAM' not in h:
+                return 'skysub'
+    return 'flam'
+
+
 def load_reference(header):
     """(name, wave, flux) of the catalogue standard matching the RSS pointing, else None."""
     try:
@@ -333,7 +343,7 @@ def run_standard(std_path, sens_path, sci_paths, opts, fit_channels=('green', 'r
         return res
 
     # --- the star's track in the standard exposure
-    sr = aio.load_field([sib.get('green') or next(iter(sib.values()))], plane='auto')
+    sr = aio.load_field([sib.get('green') or next(iter(sib.values()))], plane=std_plane(sib))
     info = aio.read_exposure_info(sr)[0]
     geom = dar.exposure_geometry(info)
     try:

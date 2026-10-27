@@ -871,7 +871,7 @@ def run_standard_only(args) -> int:
 def _correct_standard_rss(args, res, opts, fatal, rep, outdir):
     """Write the ADC-corrected standard RSS copies and check them: same structure as the input,
     star track flat, fixed-aperture captured fraction flat."""
-    from adcfit import __version__, io as aio, qa, rsscorr, star as astar
+    from adcfit import __version__, io as aio, qa, rsscorr, standard as astd, star as astar
     if res.track is None:
         raise ValueError('standard: no usable centroid track, so the RSS cannot be corrected')
     sib = res.summary['standard_rss']
@@ -886,7 +886,7 @@ def _correct_standard_rss(args, res, opts, fatal, rep, outdir):
             logger.error('corrected %s RSS differs from the input structure: %s', c, msg)
     # re-measure the star on the corrected files
     green = out['paths'].get('green') or next(iter(out['paths'].values()))
-    sr2 = aio.load_field([green], plane='auto')
+    sr2 = aio.load_field([green], plane=astd.std_plane(out['paths']))
     try:
         inst2 = aio.instrument_xy(sr2)
     except Exception:                                     # noqa: BLE001
